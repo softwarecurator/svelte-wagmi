@@ -1,6 +1,19 @@
 {
 	"name": "svelte-wagmi",
-	"version": "0.0.1",
+	"author": "@softwarecurator",
+	"version": "0.0.2",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/softwarecurator/svelte-wagmi"
+	},
+	"keywords": [
+		"wagmi",
+		"svelte-wagmi",
+		"wagmi/core",
+		"web3",
+		"metamask"
+	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build && npm run package",
