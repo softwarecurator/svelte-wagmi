@@ -5,11 +5,20 @@
 		disconnectWagmi,
 		signerAddress,
 		connection,
-		chainId
+		chainId,
+		web3Modal
 	} from '$lib/stores/wagmi';
 	import { onMount } from 'svelte';
 
-	onMount(async () => await configureWagmi());
+	onMount(
+		async () =>
+			await configureWagmi({
+				walletconnect: false,
+				walletconnectProjectID: '',
+				alchemyKey: '',
+				autoConnect: true
+			})
+	);
 </script>
 
 <h1>Svelte Wagmi</h1>
@@ -20,5 +29,9 @@
 	<button on:click={disconnectWagmi}>disconnect</button>
 {:else}
 	<p>not connected</p>
+	<p>Connect With walletconnect</p>
+	<button on:click={async () => $web3Modal.openModal()}>connect</button>
+
+	<p>Connect With InjectedConnector</p>
 	<button on:click={async () => await connection()}>connect</button>
 {/if}

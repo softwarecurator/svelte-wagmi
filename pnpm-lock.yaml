@@ -7,6 +7,8 @@ specifiers:
   '@typescript-eslint/eslint-plugin': ^5.45.0
   '@typescript-eslint/parser': ^5.45.0
   '@wagmi/core': ^0.9.7
+  '@web3modal/ethereum': ^2.1.2
+  '@web3modal/html': ^2.1.2
   eslint: ^8.28.0
   eslint-config-prettier: ^8.5.0
   eslint-plugin-svelte3: ^4.0.0
@@ -21,6 +23,8 @@ specifiers:
 
 dependencies:
   '@wagmi/core': 0.9.7_typescript@4.9.5
+  '@web3modal/ethereum': 2.1.2_@wagmi+core@0.9.7
+  '@web3modal/html': 2.1.2
 
 devDependencies:
   '@sveltejs/adapter-auto': 2.0.0_@sveltejs+kit@1.8.5
@@ -1869,6 +1873,33 @@ packages:
       - react
     dev: false
 
+  /@web3modal/core/2.1.2:
+    resolution: {integrity: sha512-PQBMqSviiBZqAEhc3w3XkEEui8V3apdLGblx6WfBUwg4mKJJ36zY4UCzBNee/LgD1bKVz+86KI8PmU1XGL34lw==}
+    dependencies:
+      buffer: 6.0.3
+      valtio: 1.10.2
+    transitivePeerDependencies:
+      - react
+    dev: false
+
+  /@web3modal/ethereum/2.1.2_@wagmi+core@0.9.7:
+    resolution: {integrity: sha512-fHcOKSR7VpX+O8doO/33/zywEWsRrKg8EwPGik0utgtLs0moT29zvQxxnf80Lwy+OAi6C201nb14oUDmxjSFzQ==}
+    peerDependencies:
+      '@wagmi/core': '>=0.9'
+      ethers: '>=5.7'
+    dependencies:
+      '@wagmi/core': 0.9.7_typescript@4.9.5
+    dev: false
+
+  /@web3modal/html/2.1.2:
+    resolution: {integrity: sha512-lQ1yAC7K69VGmwsZKaIZOuQytoFr/Xmybv8j6ImtHHKszaImqrqSSJ0raFW21Apep2DVO9jmBjHhdLwPS8mZRg==}
+    dependencies:
+      '@web3modal/core': 2.1.2
+      '@web3modal/ui': 2.1.2
+    transitivePeerDependencies:
+      - react
+    dev: false
+
   /@web3modal/standalone/2.1.1:
     resolution: {integrity: sha512-K06VkZqltLIBKpnLeM2oszRDSdLnwXJWCcItWEOkH4LDFQIiq8lSeLhcamuadRxRKF4ZyTSLHHJ5MFcMfZEHQQ==}
     dependencies:
@@ -1882,6 +1913,17 @@ packages:
     resolution: {integrity: sha512-0jRDxgPc/peaE5KgqnzzriXhdVu5xNyCMP5Enqdpd77VkknJIs7h16MYKidxgFexieyHpCOssWySsryWcP2sXA==}
     dependencies:
       '@web3modal/core': 2.1.1
+      lit: 2.6.1
+      motion: 10.15.5
+      qrcode: 1.5.1
+    transitivePeerDependencies:
+      - react
+    dev: false
+
+  /@web3modal/ui/2.1.2:
+    resolution: {integrity: sha512-bws2d5HC2JdVm2cuFNb978nQsGdn8tJpNzaA7CbX9Zm8hG/A5w8AfYDvvZeiPC7AjkR9mkOkx6iREEdHVFMGHg==}
+    dependencies:
+      '@web3modal/core': 2.1.2
       lit: 2.6.1
       motion: 10.15.5
       qrcode: 1.5.1
@@ -3897,6 +3939,10 @@ packages:
     resolution: {integrity: sha512-FD8KmQUQD6Mfpd0hywCOzcon/dbkFP8XBd9F1ycbKtvVsfv6TsFUKJ2eC0Iz2y+KzlkdT1Z8SY6ZSgm07zOyqg==}
     dev: false
 
+  /proxy-compare/2.5.0:
+    resolution: {integrity: sha512-f1us0OsVAJ3tdIMXGQx2lmseYS4YXe4W+sKF5g5ww/jV+5ogMadPt+sIZ+88Ga9kvMJsrRNWzCrKPpr6pMWYbA==}
+    dev: false
+
   /publint/0.1.9:
     resolution: {integrity: sha512-O53y7vbePxuGFmEjgcrafMSlDpOJwOkj8YdexOt7yWlv7SB3rXoT3mHknyMJ3lf2UFH5Bmt6tnIkHcOTR6dEoA==}
     engines: {node: '>=16'}
@@ -4599,6 +4645,19 @@ packages:
 
   /v8-compile-cache-lib/3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
+    dev: false
+
+  /valtio/1.10.2:
+    resolution: {integrity: sha512-NG9FUB44VQKzEqs6qGke6XEuAYWoEeCADiS6/Hkgy2bYALOdztoCwJUNl79lEae2wGhqZ6Lv+K9wPUIiS8VLxw==}
+    engines: {node: '>=12.20.0'}
+    peerDependencies:
+      react: '>=16.8'
+    peerDependenciesMeta:
+      react:
+        optional: true
+    dependencies:
+      proxy-compare: 2.5.0
+      use-sync-external-store: 1.2.0
     dev: false
 
   /valtio/1.9.0:
