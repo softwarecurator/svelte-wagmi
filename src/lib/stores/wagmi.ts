@@ -13,7 +13,7 @@ import { goerli, mainnet } from '@wagmi/core/chains';
 import { publicProvider } from '@wagmi/core/providers/public';
 import { alchemyProvider } from '@wagmi/core/providers/alchemy';
 import { InjectedConnector } from '@wagmi/core/connectors/injected';
-import { EthereumClient, walletConnectProvider } from '@web3modal/ethereum';
+import { EthereumClient } from '@web3modal/ethereum';
 import { Web3Modal } from '@web3modal/html';
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
 
@@ -51,9 +51,6 @@ export const configureWagmi = async (options: IOptions = {}) => {
 	if (options.alchemyKey)
 		providers.push(alchemyProvider({ apiKey: options.alchemyKey, priority: 0 }));
 
-	if (options.walletconnect && options.walletconnectProjectID)
-		providers.push(walletConnectProvider({ projectId: options.walletconnectProjectID }));
-
 	const { provider, webSocketProvider } = configureChains(chains, providers);
 
 	const connectors: any = [new InjectedConnector({ chains })];
@@ -63,7 +60,8 @@ export const configureWagmi = async (options: IOptions = {}) => {
 			new WalletConnectConnector({
 				chains,
 				options: {
-					qrcode: false
+					projectId: options.walletconnectProjectID,
+					showQrModal: false
 				}
 			})
 		);

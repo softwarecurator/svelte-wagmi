@@ -1,7 +1,7 @@
 {
 	"name": "svelte-wagmi",
 	"author": "@softwarecurator",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"license": "MIT",
 	"repository": {
 		"type": "git",
@@ -59,8 +59,8 @@
 	"types": "./dist/index.d.ts",
 	"type": "module",
 	"dependencies": {
-		"@wagmi/core": "^0.9.7",
-		"@web3modal/ethereum": "^2.1.2",
+		"@wagmi/core": "^0.10.9",
+		"@web3modal/ethereum": "^2.3.0",
 		"@web3modal/html": "^2.1.2"
 	}
 }
