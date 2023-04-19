@@ -40,15 +40,23 @@ onMount(async () => await configureWagmi(options));
 
 - configureWagmi should be on the +layout.svelte root folder
 
+### Note
+
+In a production app, it is not recommended to use a public provider (no alchemy key).
+
 ```js
 import { connection, web3Modal } from 'svelte-wagmi';
 
-// injected connector (metamask)
-<button on:click={async () => await connection()}>connect</button>;
+// injected connector (metamask) params: chainId: defaults to 1
+<button on:click={async () => await connection(1)}>connect</button>;
 
 // walletconnect
 <button on:click={async () => $web3Modal.openModal()}>connect</button>;
 ```
+
+### Web3Modal
+
+Docs to use the Modal is [here](https://docs.walletconnect.com/2.0/web3modal/html-js/actions#web3modalsetdefaultchain)
 
 ### Using the stores
 
@@ -83,6 +91,10 @@ You can use any wagmi/core functions
 	const account = getAccount();
 </script>
 ```
+
+### Note
+
+changing network using `@wagmi/core` will also chage the `svelte-wagmi`: chainId store
 
 ## Roadmap
 

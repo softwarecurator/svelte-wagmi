@@ -33,5 +33,5 @@
 	<button on:click={async () => $web3Modal.openModal()}>connect</button>
 
 	<p>Connect With InjectedConnector</p>
-	<button on:click={async () => await connection()}>connect</button>
+	<button on:click={async () => await connection(1)}>connect</button>
 {/if}

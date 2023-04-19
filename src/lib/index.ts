@@ -10,4 +10,13 @@ import {
 	disconnectWagmi
 } from './stores/wagmi';
 
-export { configureWagmi, connected, chainId, web3Modal, signerAddress, loading, connection, disconnectWagmi };
+export {
+	configureWagmi,
+	connected,
+	chainId,
+	web3Modal,
+	signerAddress,
+	loading,
+	connection,
+	disconnectWagmi
+};

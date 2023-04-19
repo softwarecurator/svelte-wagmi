@@ -9,7 +9,91 @@ import {
 	connect,
 	watchNetwork
 } from '@wagmi/core';
-import { goerli, mainnet } from '@wagmi/core/chains';
+import {
+	arbitrum,
+	arbitrumGoerli,
+	aurora,
+	auroraTestnet,
+	avalanche,
+	avalancheFuji,
+	baseGoerli,
+	boba,
+	bronos,
+	bronosTestnet,
+	bsc,
+	bscTestnet,
+	canto,
+	celo,
+	celoAlfajores,
+	cronos,
+	crossbell,
+	dfk,
+	dogechain,
+	evmos,
+	evmosTestnet,
+	fantom,
+	fantomTestnet,
+	filecoin,
+	filecoinCalibration,
+	filecoinHyperspace,
+	flare,
+	flareTestnet,
+	foundry,
+	gnosis,
+	gnosisChiado,
+	goerli,
+	hardhat,
+	harmonyOne,
+	iotex,
+	iotexTestnet,
+	klaytn,
+	localhost,
+	mainnet,
+	metis,
+	metisGoerli,
+	moonbaseAlpha,
+	moonbeam,
+	moonriver,
+	nexi,
+	okc,
+	optimism,
+	optimismGoerli,
+	polygon,
+	polygonMumbai,
+	polygonZkEvm,
+	polygonZkEvmTestnet,
+	scrollTestnet,
+	sepolia,
+	shardeumSphinx,
+	skaleBlockBrawlers,
+	skaleCalypso,
+	skaleCalypsoTestnet,
+	skaleChaosTestnet,
+	skaleCryptoBlades,
+	skaleCryptoColosseum,
+	skaleEuropa,
+	skaleEuropaTestnet,
+	skaleExorde,
+	skaleHumanProtocol,
+	skaleNebula,
+	skaleNebulaTestnet,
+	skaleRazor,
+	skaleTitan,
+	skaleTitanTestnet,
+	songbird,
+	songbirdTestnet,
+	taraxa,
+	taraxaTestnet,
+	telos,
+	telosTestnet,
+	wanchain,
+	wanchainTestnet,
+	xdc,
+	xdcTestnet,
+	zhejiang,
+	zkSync,
+	zkSyncTestnet
+} from '@wagmi/core/chains';
 import { publicProvider } from '@wagmi/core/providers/public';
 import { alchemyProvider } from '@wagmi/core/providers/alchemy';
 import { InjectedConnector } from '@wagmi/core/connectors/injected';
@@ -33,6 +117,90 @@ interface IOptions {
 let unWatchAccount: any;
 let unWatchNetwork: any;
 
+const chains = [
+	mainnet,
+	arbitrum,
+	arbitrumGoerli,
+	avalanche,
+	avalancheFuji,
+	baseGoerli,
+	boba,
+	bronos,
+	bronosTestnet,
+	bsc,
+	bscTestnet,
+	canto,
+	celo,
+	celoAlfajores,
+	cronos,
+	crossbell,
+	dfk,
+	dogechain,
+	evmos,
+	evmosTestnet,
+	fantom,
+	fantomTestnet,
+	filecoin,
+	filecoinCalibration,
+	filecoinHyperspace,
+	flare,
+	flareTestnet,
+	foundry,
+	gnosis,
+	gnosisChiado,
+	goerli,
+	hardhat,
+	harmonyOne,
+	iotex,
+	iotexTestnet,
+	klaytn,
+	localhost,
+	metis,
+	metisGoerli,
+	moonbaseAlpha,
+	moonbeam,
+	moonriver,
+	nexi,
+	okc,
+	optimism,
+	optimismGoerli,
+	polygon,
+	polygonMumbai,
+	polygonZkEvm,
+	polygonZkEvmTestnet,
+	scrollTestnet,
+	sepolia,
+	shardeumSphinx,
+	skaleBlockBrawlers,
+	skaleCalypso,
+	skaleCalypsoTestnet,
+	skaleChaosTestnet,
+	skaleCryptoBlades,
+	skaleCryptoColosseum,
+	skaleEuropa,
+	skaleEuropaTestnet,
+	skaleExorde,
+	skaleHumanProtocol,
+	skaleNebula,
+	skaleNebulaTestnet,
+	skaleRazor,
+	skaleTitan,
+	skaleTitanTestnet,
+	songbird,
+	songbirdTestnet,
+	taraxa,
+	taraxaTestnet,
+	telos,
+	telosTestnet,
+	wanchain,
+	wanchainTestnet,
+	xdc,
+	xdcTestnet,
+	zhejiang,
+	zkSync,
+	zkSyncTestnet
+];
+
 const unsubscribers = () => {
 	if (unWatchAccount && unWatchNetwork) {
 		unWatchAccount();
@@ -44,8 +212,6 @@ const unsubscribers = () => {
 };
 
 export const configureWagmi = async (options: IOptions = {}) => {
-	const chains = [goerli, mainnet];
-
 	const providers: any = [publicProvider({ priority: 1 })];
 
 	if (options.alchemyKey)
@@ -114,8 +280,12 @@ const init = async () => {
 	}
 };
 
-export const connection = async () => {
+export const connection = async (chainId: number = 1) => {
+	const chain: any = chains.filter(({ id }) => {
+		return id === chainId;
+	});
 	await connect({
+		chainId: chain.id,
 		connector: new InjectedConnector()
 	});
 
