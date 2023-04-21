@@ -12,87 +12,19 @@ import {
 import {
 	arbitrum,
 	arbitrumGoerli,
-	aurora,
-	auroraTestnet,
 	avalanche,
 	avalancheFuji,
 	baseGoerli,
-	boba,
-	bronos,
-	bronosTestnet,
-	bsc,
 	bscTestnet,
 	canto,
-	celo,
-	celoAlfajores,
-	cronos,
-	crossbell,
-	dfk,
-	dogechain,
-	evmos,
-	evmosTestnet,
-	fantom,
-	fantomTestnet,
-	filecoin,
-	filecoinCalibration,
-	filecoinHyperspace,
-	flare,
-	flareTestnet,
-	foundry,
-	gnosis,
-	gnosisChiado,
 	goerli,
-	hardhat,
-	harmonyOne,
-	iotex,
-	iotexTestnet,
-	klaytn,
-	localhost,
 	mainnet,
-	metis,
-	metisGoerli,
-	moonbaseAlpha,
-	moonbeam,
-	moonriver,
-	nexi,
-	okc,
 	optimism,
 	optimismGoerli,
 	polygon,
 	polygonMumbai,
 	polygonZkEvm,
-	polygonZkEvmTestnet,
-	scrollTestnet,
-	sepolia,
-	shardeumSphinx,
-	skaleBlockBrawlers,
-	skaleCalypso,
-	skaleCalypsoTestnet,
-	skaleChaosTestnet,
-	skaleCryptoBlades,
-	skaleCryptoColosseum,
-	skaleEuropa,
-	skaleEuropaTestnet,
-	skaleExorde,
-	skaleHumanProtocol,
-	skaleNebula,
-	skaleNebulaTestnet,
-	skaleRazor,
-	skaleTitan,
-	skaleTitanTestnet,
-	songbird,
-	songbirdTestnet,
-	taraxa,
-	taraxaTestnet,
-	telos,
-	telosTestnet,
-	wanchain,
-	wanchainTestnet,
-	xdc,
-	xdcTestnet,
-	zhejiang,
-	zkSync,
-	zkSyncTestnet
+	polygonZkEvmTestnet
 } from '@wagmi/core/chains';
 import { publicProvider } from '@wagmi/core/providers/public';
 import { alchemyProvider } from '@wagmi/core/providers/alchemy';
@@ -102,6 +34,7 @@ import { Web3Modal } from '@web3modal/html';
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
 
 export const connected = writable<boolean>(false);
+export const wagmiLoaded = writable<boolean>(false);
 export const chainId = writable<number | null | undefined>(null);
 export const signerAddress = writable<string | null>(null);
 export const loading = writable<boolean>(true);
@@ -119,86 +52,20 @@ let unWatchNetwork: any;
 
 const chains = [
 	mainnet,
+	goerli,
 	arbitrum,
 	arbitrumGoerli,
 	avalanche,
 	avalancheFuji,
 	baseGoerli,
-	boba,
-	bronos,
-	bronosTestnet,
-	bsc,
 	bscTestnet,
 	canto,
-	celo,
-	celoAlfajores,
-	cronos,
-	crossbell,
-	dfk,
-	dogechain,
-	evmos,
-	evmosTestnet,
-	fantom,
-	fantomTestnet,
-	filecoin,
-	filecoinCalibration,
-	filecoinHyperspace,
-	flare,
-	flareTestnet,
-	foundry,
-	gnosis,
-	gnosisChiado,
-	goerli,
-	hardhat,
-	harmonyOne,
-	iotex,
-	iotexTestnet,
-	klaytn,
-	localhost,
-	metis,
-	metisGoerli,
-	moonbaseAlpha,
-	moonbeam,
-	moonriver,
-	nexi,
-	okc,
 	optimism,
 	optimismGoerli,
 	polygon,
 	polygonMumbai,
 	polygonZkEvm,
-	polygonZkEvmTestnet,
-	scrollTestnet,
-	sepolia,
-	shardeumSphinx,
-	skaleBlockBrawlers,
-	skaleCalypso,
-	skaleCalypsoTestnet,
-	skaleChaosTestnet,
-	skaleCryptoBlades,
-	skaleCryptoColosseum,
-	skaleEuropa,
-	skaleEuropaTestnet,
-	skaleExorde,
-	skaleHumanProtocol,
-	skaleNebula,
-	skaleNebulaTestnet,
-	skaleRazor,
-	skaleTitan,
-	skaleTitanTestnet,
-	songbird,
-	songbirdTestnet,
-	taraxa,
-	taraxaTestnet,
-	telos,
-	telosTestnet,
-	wanchain,
-	wanchainTestnet,
-	xdc,
-	xdcTestnet,
-	zhejiang,
-	zkSync,
-	zkSyncTestnet
+	polygonZkEvmTestnet
 ];
 
 const unsubscribers = () => {
@@ -245,7 +112,7 @@ export const configureWagmi = async (options: IOptions = {}) => {
 
 		web3Modal.set(modal);
 	}
-
+	wagmiLoaded.set(true);
 	await init();
 };
 
@@ -260,8 +127,10 @@ const init = async () => {
 			loading.set(false);
 			signerAddress.set(account.address);
 		} else if (get(signerAddress) !== account.address && get(connected)) {
+			loading.set(false);
 			await disconnectWagmi();
 		} else if (account.isDisconnected && get(connected)) {
+			loading.set(false);
 			await disconnectWagmi();
 		}
 	});
@@ -275,9 +144,9 @@ const init = async () => {
 		const chain: any = getNetwork();
 		chainId.set(chain.chain.id);
 		connected.set(true);
-		loading.set(false);
 		signerAddress.set(account.address);
 	}
+	loading.set(false);
 };
 
 export const connection = async (chainId: number = 1) => {
@@ -297,5 +166,5 @@ export const disconnectWagmi = async () => {
 	connected.set(false);
 	chainId.set(null);
 	signerAddress.set(null);
-	loading.set(true);
+	loading.set(false);
 };

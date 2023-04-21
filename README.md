@@ -15,20 +15,33 @@ pnpm i svelte-wagmi@latest
 ## Usages
 
 ```js
-import { connected, chainId, signerAddress, web3Modal, loading } from 'svelte-wagmi';
+import { connected, chainId, signerAddress, web3Modal, loading, wagmiLoaded } from 'svelte-wagmi';
 ```
 
 - connected: store value is true if a connection has been set up.
+- wagmiLoaded: store value is true if Svelte Wagmi is Successfully Configured.
 - chainId: store value is the current chainId when connected.
 - signerAddress: store value is a shortcut to get eth address when connected.
 - loading: store value is true if a connection is being set up.
 - web3Modal: store value is a of the walletconnect modal.
 
 ```js
-import { configureWagmi } from 'svelte-wagmi';
+import { configureWagmi, wagmiLoaded } from 'svelte-wagmi';
 import { onMount } from 'svelte';
 
+const options = {
+	walletconnect: false,
+	walletconnectProjectID: '',
+	alchemyKey: '',
+	autoConnect: true
+}
+
 onMount(async () => await configureWagmi(options));
+
+
+{#if $wagmiLoaded}
+	<h1>Svelte Wagmi Loaded</h1>
+{/if}
 ```
 
 |         Option         |   Field |
@@ -39,6 +52,7 @@ onMount(async () => await configureWagmi(options));
 |      autoConnect       | boolean |
 
 - configureWagmi should be on the +layout.svelte root folder
+- wagmiLoaded should always render the layout html first.
 
 ### Note
 
@@ -86,15 +100,21 @@ You can use any wagmi/core functions
 
 ```html
 <script>
-	import { getAccount } from '@wagmi/core';
+		import { getAccount, switchNetwork } from '@wagmi/core';
 
-	const account = getAccount();
+		const account = getAccount();
+
+		const network = await switchNetwork({
+	  chainId: 69,
+	})
 </script>
 ```
 
 ### Note
 
 changing network using `@wagmi/core` will also chage the `svelte-wagmi`: chainId store
+
+`$signerAddress` and `getAccount()` are the same ETH address
 
 ## Roadmap
 
