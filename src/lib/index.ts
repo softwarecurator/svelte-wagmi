@@ -7,11 +7,13 @@ import {
 	loading,
 	connection,
 	web3Modal,
+	wagmiLoaded,
 	disconnectWagmi
 } from './stores/wagmi';
 
 export {
 	configureWagmi,
+	wagmiLoaded,
 	connected,
 	chainId,
 	web3Modal,

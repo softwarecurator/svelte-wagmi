@@ -15,7 +15,17 @@ pnpm i svelte-wagmi@latest
 ## Usages
 
 ```js
-import { connected, chainId, signerAddress, web3Modal, loading, wagmiLoaded } from 'svelte-wagmi';
+import {
+	configureWagmi,
+	wagmiLoaded,
+	connected,
+	chainId,
+	web3Modal,
+	signerAddress,
+	loading,
+	connection,
+	disconnectWagmi
+} from 'svelte-wagmi';
 ```
 
 - connected: store value is true if a connection has been set up.
