@@ -184,22 +184,6 @@ The `connection` function is used to connect to an Ethereum provider using the I
 <button on:click="{connectToEthereum}">Connect to Ethereum</button>
 ```
 
-### Using @wagmi/core
-
-You can use any wagmi/core functions
-
-```html
-<script>
-		import { getAccount, switchNetwork } from '@wagmi/core';
-
-		const account = getAccount();
-
-		const network = await switchNetwork({
-	  chainId: 69,
-	})
-</script>
-```
-
 ### WC
 
 The `WC` function is used to connect to an Ethereum provider using WalletConnect. It takes one parameter:
