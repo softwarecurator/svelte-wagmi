@@ -8,6 +8,8 @@ import {
 	connection,
 	web3Modal,
 	wagmiLoaded,
+	init,
+	WC,
 	disconnectWagmi
 } from './stores/wagmi';
 
@@ -16,9 +18,11 @@ export {
 	wagmiLoaded,
 	connected,
 	chainId,
+	init,
 	web3Modal,
 	signerAddress,
 	loading,
+	WC,
 	connection,
 	disconnectWagmi
 };

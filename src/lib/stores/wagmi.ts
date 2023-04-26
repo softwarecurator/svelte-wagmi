@@ -7,7 +7,8 @@ import {
 	disconnect,
 	getNetwork,
 	connect,
-	watchNetwork
+	watchNetwork,
+	signMessage
 } from '@wagmi/core';
 import {
 	arbitrum,
@@ -32,6 +33,7 @@ import { InjectedConnector } from '@wagmi/core/connectors/injected';
 import { EthereumClient } from '@web3modal/ethereum';
 import { Web3Modal } from '@web3modal/html';
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
+import { SiweMessage } from 'siwe';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
@@ -40,11 +42,31 @@ export const signerAddress = writable<string | null>(null);
 export const loading = writable<boolean>(true);
 export const web3Modal = writable<Web3Modal>();
 
+let requireSignatureOnLogin = false;
+let paths: paths | null = null;
+
+interface paths {
+	nonceAPIPath: {
+		url: string;
+		method: string;
+	};
+	verficationSignAPIPath: {
+		url: string;
+		method: string;
+	};
+	authAPIPath: {
+		url: string;
+		method: string;
+	}
+}
+
 interface IOptions {
+	requireSignatureOnLogin?: boolean;
 	walletconnect?: boolean;
 	walletconnectProjectID?: string;
 	alchemyKey?: string | null;
 	autoConnect?: boolean;
+	paths?: paths;
 }
 
 let unWatchAccount: any;
@@ -80,7 +102,10 @@ const unsubscribers = () => {
 
 export const configureWagmi = async (options: IOptions = {}) => {
 	const providers: any = [publicProvider({ priority: 1 })];
-
+	if (options.requireSignatureOnLogin && options.paths) {
+		paths = options.paths;
+		requireSignatureOnLogin = true;
+	}
 	if (options.alchemyKey)
 		providers.push(alchemyProvider({ apiKey: options.alchemyKey, priority: 0 }));
 
@@ -116,11 +141,16 @@ export const configureWagmi = async (options: IOptions = {}) => {
 	await init();
 };
 
-const init = async () => {
+export const init = async () => {
 	unsubscribers();
 	const account: any = getAccount();
 	unWatchAccount = watchAccount(async (account) => {
-		if (!get(connected) && get(signerAddress) !== account.address && account.address) {
+		if (
+			get(wagmiLoaded) &&
+			get(signerAddress) !== account.address &&
+			account.address &&
+			!requireSignatureOnLogin
+		) {
 			const chain: any = getNetwork();
 			chainId.set(chain.chain.id);
 			connected.set(true);
@@ -140,16 +170,33 @@ const init = async () => {
 			chainId.set(network.chain.id);
 		}
 	});
-	if (account.address) {
-		const chain: any = getNetwork();
-		chainId.set(chain.chain.id);
-		connected.set(true);
-		signerAddress.set(account.address);
+	if (paths && requireSignatureOnLogin && account.address) {
+		const response = await fetch(paths.authAPIPath.url, {
+			method: paths.authAPIPath.method
+		});
+		if (response.ok) {
+			const chain: any = getNetwork();
+			chainId.set(chain.chain.id);
+			connected.set(true);
+			signerAddress.set(account.address);
+		}
+		loading.set(false);
+	} else {
+
+		if (account.address) {
+			const chain: any = getNetwork();
+			chainId.set(chain.chain.id);
+			connected.set(true);
+			signerAddress.set(account.address);
+		}
+		loading.set(false);
 	}
-	loading.set(false);
 };
 
-export const connection = async (chainId: number = 1) => {
+export const connection = async (
+	chainId: number = 1,
+	statement = 'Sign in with Ethereum to the app.'
+) => {
 	const chain: any = chains.filter(({ id }) => {
 		return id === chainId;
 	});
@@ -158,7 +205,78 @@ export const connection = async (chainId: number = 1) => {
 		connector: new InjectedConnector()
 	});
 
-	await init();
+	if (requireSignatureOnLogin && paths) {
+		const account: any = getAccount();
+		const chain: any = getNetwork();
+		const results = await fetch(paths.nonceAPIPath.url, {
+			method: paths.nonceAPIPath.method
+		});
+
+		const nonce = await results.json();
+		const message = new SiweMessage({
+			domain: window.location.host,
+			address: account.address,
+			statement,
+			uri: window.location.origin,
+			version: '1',
+			chainId: chain.chain.id,
+			nonce
+		});
+		const signature = await signMessage({
+			message: message.prepareMessage()
+		});
+		const results2 = await fetch(paths.verficationSignAPIPath.url, {
+			method: paths.verficationSignAPIPath.method,
+			body: JSON.stringify({ signature, message })
+		});
+
+		const verifed = await results2.json();
+
+		if (verifed) {
+			await init();
+		}
+	} else {
+		await init();
+	}
+};
+
+export const WC = async (statement = 'Sign in with Ethereum to the app.') => {
+	get(web3Modal).openModal();
+	const account: any = await waitForAccount();
+
+	if (requireSignatureOnLogin && paths) {
+		const chain: any = getNetwork();
+
+		const results = await fetch(paths.nonceAPIPath.url, {
+			method: paths.nonceAPIPath.method
+		});
+
+		const nonce = await results.json();
+		const message = new SiweMessage({
+			domain: window.location.host,
+			address: account.address,
+			statement,
+			uri: window.location.origin,
+			version: '1',
+			chainId: chain.chain.id,
+			nonce
+		});
+		const signature = await signMessage({
+			message: message.prepareMessage()
+		});
+		const results2 = await fetch(paths.verficationSignAPIPath.url, {
+			method: paths.verficationSignAPIPath.method,
+			body: JSON.stringify({ signature, message })
+		});
+
+		const verifed = await results2.json();
+
+		if (verifed) {
+			await init();
+		}
+	} else {
+		await init();
+	}
 };
 
 export const disconnectWagmi = async () => {
@@ -168,3 +286,17 @@ export const disconnectWagmi = async () => {
 	signerAddress.set(null);
 	loading.set(false);
 };
+
+function waitForAccount() {
+	return new Promise((resolve, reject) => {
+		const unsub = watchAccount((account) => {
+			if (account?.isConnected) {
+				// Gottem, resolve the promise w/user's selected & connected Acc.
+				resolve(account);
+				unsub();
+			} else {
+				console.warn('🔃 - No Account Connected Yet...');
+			}
+		});
+	});
+}
