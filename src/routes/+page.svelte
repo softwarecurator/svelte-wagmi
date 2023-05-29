@@ -17,21 +17,6 @@
 		async () =>
 			await configureWagmi({
 				walletconnect: true,
-				requireSignatureOnLogin: true,
-				paths: {
-					nonceAPIPath: {
-						url: '/api/nonce',
-						method: 'GET'
-					},
-					verficationSignAPIPath: {
-						url: '/api/verify',
-						method: 'POST'
-					},
-					authAPIPath: {
-						url: '/api/auth',
-						method: 'GET'
-					}
-				},
 				walletconnectProjectID: '',
 				alchemyKey: '',
 				autoConnect: true

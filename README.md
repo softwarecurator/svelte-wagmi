@@ -4,10 +4,10 @@ Svelte Wagmi is a package that provides a collection of Svelte stores and functi
 
 ## Installation
 
-To install the package, run the following command:
+To install the package and its peer dependencies, run the following command:
 
 ```bash
-npm install svelte-wagmi
+npm install svelte-wagmi viem @wagmi/core
 ```
 
 ## Usages
@@ -109,7 +109,7 @@ Example usage:
 
 ```html
 <script>
-import { web3Modal } from '@wagmi/svelte-store';
+import { web3Modal } from 'svelte-wagmi';
 </script>
 
 {#if $web3Modal}
@@ -126,13 +126,11 @@ Connect to Ethereum
 
 The `configureWagmi` function is used to configure the `@wagmi/core` library and initialize the Svelte stores. It takes an optional options object that can be used to configure the behavior of the function.
 
-- `requireSignatureOnLogin` (optional): A boolean that indicates whether the user must sign a message to log in. If this is set to true, the paths option must also be provided.
 - `walletconnect` (optional): A boolean that indicates whether to enable WalletConnect support. If this is set to true, the
   walletconnectProjectID option must also be provided.
 - `walletconnectProjectID` (optional): A string that contains the Project ID for the WalletConnect service. This is required if walletconnect is set to true.
 - `alchemyKey` (optional): A string that contains the API key for the Alchemy service. This is required if you want to use the Alchemy provider.
 - `autoConnect` (optional): A boolean that indicates whether to automatically connect to the Ethereum provider on page load.
-- `paths` (optional): An object that contains three properties: nonceAPIPath, verificationSignAPIPath, and authAPIPath. These properties contain the URLs and HTTP methods for the API endpoints that are used for message signing and authentication.
 
 Example usage:
 
@@ -141,25 +139,10 @@ Example usage:
 	import { configureWagmi } from 'svelte-wagmi';
 
 	configureWagmi({
-		requireSignatureOnLogin: true,
 		walletconnect: true,
 		walletconnectProjectID: '1234567890',
 		alchemyKey: 'abcdefghijklmnopqrstuvwxyz123456',
-		autoConnect: true,
-		paths: {
-			nonceAPIPath: {
-				url: 'https://example.com/nonce',
-				method: 'GET'
-			},
-			verificationSignAPIPath: {
-				url: 'https://example.com/verify',
-				method: 'POST'
-			},
-			authAPIPath: {
-				url: 'https://example.com/auth',
-				method: 'POST'
-			}
-		}
+		autoConnect: true
 	});
 </script>
 ```
@@ -169,12 +152,13 @@ Example usage:
 The `connection` function is used to connect to an Ethereum provider using the InjectedConnector from @wagmi/core. It takes two parameters:
 
 - `chainId` (optional): A number that specifies the chain ID to connect to. The default is 1 (mainnet).
-- `statement` (optional): A string that specifies the statement to be signed by the user when logging in. This is required if `requireSignatureOnLogin` is set to true in `configureWagmi`.
+- `statement` (optional): A string that specifies the statement to be signed by the user when logging in.
+
   Example usage:
 
 ```html
 <script>
-	import { connection } from '@wagmi/svelte-store';
+	import { connection } from 'svelte-wagmi';
 
 	async function connectToEthereum() {
 		await connection(1, 'Sign in to the app with Ethereum');
@@ -188,12 +172,13 @@ The `connection` function is used to connect to an Ethereum provider using the I
 
 The `WC` function is used to connect to an Ethereum provider using WalletConnect. It takes one parameter:
 
-- `statement` (optional): A string that specifies the statement to be signed by the user when logging in. This is required if `requireSignatureOnLogin` is set to true in `configureWagmi`.
+- `statement` (optional): A string that specifies the statement to be signed by the user when logging in.
+
   Example usage:
 
 ```html
 <script>
-	import { WC } from '@wagmi/svelte-store';
+	import { WC } from 'svelte-wagmi';
 
 	async function connectToEthereum() {
 		await WC('Sign in to the app with Ethereum');
@@ -208,7 +193,7 @@ The `disconnectWagmi` function is used to disconnect from the Ethereum provider 
 
 ```html
 <script>
-	import { disconnectWagmi } from '@wagmi/svelte-store';
+	import { disconnectWagmi } from 'svelte-wagmi';
 
 	async function disconnectFromEthereum() {
 		await disconnectWagmi();
@@ -231,7 +216,7 @@ The `svelte-wagmi` library also provides several Svelte stores that can be used 
 
 ```html
 <script>
-	import { connected, chainId, signerAddress } from '@wagmi/svelte-store';
+	import { connected, chainId, signerAddress } from 'svelte-wagmi';
 
 	$: console.log('Connected:', $connected);
 	$: console.log('Chain ID:', $chainId);

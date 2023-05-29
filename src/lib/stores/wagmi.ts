@@ -1,14 +1,13 @@
 import { writable, get } from 'svelte/store';
 import {
-	createClient,
+	createConfig,
 	configureChains,
 	getAccount,
 	watchAccount,
 	disconnect,
 	getNetwork,
 	connect,
-	watchNetwork,
-	signMessage
+	watchNetwork
 } from '@wagmi/core';
 import {
 	arbitrum,
@@ -30,10 +29,9 @@ import {
 import { publicProvider } from '@wagmi/core/providers/public';
 import { alchemyProvider } from '@wagmi/core/providers/alchemy';
 import { InjectedConnector } from '@wagmi/core/connectors/injected';
-import { EthereumClient } from '@web3modal/ethereum';
+import { EthereumClient, w3mProvider } from '@web3modal/ethereum';
 import { Web3Modal } from '@web3modal/html';
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
-import { SiweMessage } from 'siwe';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
@@ -42,37 +40,17 @@ export const signerAddress = writable<string | null>(null);
 export const loading = writable<boolean>(true);
 export const web3Modal = writable<Web3Modal>();
 
-let requireSignatureOnLogin = false;
-let paths: paths | null = null;
-
-interface paths {
-	nonceAPIPath: {
-		url: string;
-		method: string;
-	};
-	verficationSignAPIPath: {
-		url: string;
-		method: string;
-	};
-	authAPIPath: {
-		url: string;
-		method: string;
-	}
-}
-
 interface IOptions {
-	requireSignatureOnLogin?: boolean;
 	walletconnect?: boolean;
 	walletconnectProjectID?: string;
 	alchemyKey?: string | null;
 	autoConnect?: boolean;
-	paths?: paths;
 }
 
-let unWatchAccount: any;
-let unWatchNetwork: any;
+let unWatchAccount: () => void;
+let unWatchNetwork: () => void;
 
-const chains = [
+const defaultChains = [
 	mainnet,
 	goerli,
 	arbitrum,
@@ -101,15 +79,13 @@ const unsubscribers = () => {
 };
 
 export const configureWagmi = async (options: IOptions = {}) => {
-	const providers: any = [publicProvider({ priority: 1 })];
-	if (options.requireSignatureOnLogin && options.paths) {
-		paths = options.paths;
-		requireSignatureOnLogin = true;
-	}
-	if (options.alchemyKey)
-		providers.push(alchemyProvider({ apiKey: options.alchemyKey, priority: 0 }));
+	const providers: any = [publicProvider()];
+	if (options.alchemyKey) providers.push(alchemyProvider({ apiKey: options.alchemyKey }));
 
-	const { provider, webSocketProvider } = configureChains(chains, providers);
+	if (options.walletconnectProjectID)
+		providers.push(w3mProvider({ projectId: options.walletconnectProjectID }));
+
+	const { chains, publicClient, webSocketPublicClient } = configureChains(defaultChains, providers);
 
 	const connectors: any = [new InjectedConnector({ chains })];
 
@@ -124,11 +100,11 @@ export const configureWagmi = async (options: IOptions = {}) => {
 			})
 		);
 
-	const wagmiClient = createClient({
+	const wagmiClient = createConfig({
 		autoConnect: options.autoConnect ?? true,
-		connectors,
-		provider,
-		webSocketProvider
+		webSocketPublicClient,
+		publicClient,
+		connectors
 	});
 
 	if (options.walletconnect && options.walletconnectProjectID) {
@@ -137,6 +113,7 @@ export const configureWagmi = async (options: IOptions = {}) => {
 
 		web3Modal.set(modal);
 	}
+
 	wagmiLoaded.set(true);
 	await init();
 };
@@ -145,12 +122,7 @@ export const init = async () => {
 	unsubscribers();
 	const account: any = getAccount();
 	unWatchAccount = watchAccount(async (account) => {
-		if (
-			get(wagmiLoaded) &&
-			get(signerAddress) !== account.address &&
-			account.address &&
-			!requireSignatureOnLogin
-		) {
+		if (get(wagmiLoaded) && get(signerAddress) !== account.address && account.address) {
 			const chain: any = getNetwork();
 			chainId.set(chain.chain.id);
 			connected.set(true);
@@ -170,112 +142,42 @@ export const init = async () => {
 			chainId.set(network.chain.id);
 		}
 	});
-	if (paths && requireSignatureOnLogin && account.address) {
-		const response = await fetch(paths.authAPIPath.url, {
-			method: paths.authAPIPath.method
-		});
-		if (response.ok) {
-			const chain: any = getNetwork();
-			chainId.set(chain.chain.id);
-			connected.set(true);
-			signerAddress.set(account.address);
-		}
-		loading.set(false);
-	} else {
 
-		if (account.address) {
-			const chain: any = getNetwork();
-			chainId.set(chain.chain.id);
-			connected.set(true);
-			signerAddress.set(account.address);
-		}
-		loading.set(false);
+	if (account.address) {
+		const chain: any = getNetwork();
+		chainId.set(chain.chain.id);
+		connected.set(true);
+		signerAddress.set(account.address);
+	}
+	loading.set(false);
+};
+
+export const connection = async (chainId: number = 1) => {
+	try {
+		const chain: any = defaultChains.filter(({ id }) => {
+			return id === chainId;
+		});
+		await connect({
+			chainId: chain.id,
+			connector: new InjectedConnector()
+		});
+
+		await init();
+		return { success: true };
+	} catch (err) {
+		return { success: false };
 	}
 };
 
-export const connection = async (
-	chainId: number = 1,
-	statement = 'Sign in with Ethereum to the app.'
-) => {
-	const chain: any = chains.filter(({ id }) => {
-		return id === chainId;
-	});
-	await connect({
-		chainId: chain.id,
-		connector: new InjectedConnector()
-	});
-
-	if (requireSignatureOnLogin && paths) {
-		const account: any = getAccount();
-		const chain: any = getNetwork();
-		const results = await fetch(paths.nonceAPIPath.url, {
-			method: paths.nonceAPIPath.method
-		});
-
-		const nonce = await results.json();
-		const message = new SiweMessage({
-			domain: window.location.host,
-			address: account.address,
-			statement,
-			uri: window.location.origin,
-			version: '1',
-			chainId: chain.chain.id,
-			nonce
-		});
-		const signature = await signMessage({
-			message: message.prepareMessage()
-		});
-		const results2 = await fetch(paths.verficationSignAPIPath.url, {
-			method: paths.verficationSignAPIPath.method,
-			body: JSON.stringify({ signature, message })
-		});
-
-		const verifed = await results2.json();
-
-		if (verifed) {
-			await init();
-		}
-	} else {
+export const WC = async () => {
+	try {
+		get(web3Modal).openModal();
+		await waitForAccount();
 		await init();
-	}
-};
 
-export const WC = async (statement = 'Sign in with Ethereum to the app.') => {
-	get(web3Modal).openModal();
-	const account: any = await waitForAccount();
-
-	if (requireSignatureOnLogin && paths) {
-		const chain: any = getNetwork();
-
-		const results = await fetch(paths.nonceAPIPath.url, {
-			method: paths.nonceAPIPath.method
-		});
-
-		const nonce = await results.json();
-		const message = new SiweMessage({
-			domain: window.location.host,
-			address: account.address,
-			statement,
-			uri: window.location.origin,
-			version: '1',
-			chainId: chain.chain.id,
-			nonce
-		});
-		const signature = await signMessage({
-			message: message.prepareMessage()
-		});
-		const results2 = await fetch(paths.verficationSignAPIPath.url, {
-			method: paths.verficationSignAPIPath.method,
-			body: JSON.stringify({ signature, message })
-		});
-
-		const verifed = await results2.json();
-
-		if (verifed) {
-			await init();
-		}
-	} else {
-		await init();
+		return { succcess: true };
+	} catch (err) {
+		return { success: false };
 	}
 };
 
@@ -287,8 +189,14 @@ export const disconnectWagmi = async () => {
 	loading.set(false);
 };
 
-function waitForAccount() {
+const waitForAccount = () => {
 	return new Promise((resolve, reject) => {
+		const unsub1 = get(web3Modal).subscribeModal((newState) => {
+			if (!newState.open) {
+				reject('modal closed');
+				unsub1();
+			}
+		});
 		const unsub = watchAccount((account) => {
 			if (account?.isConnected) {
 				// Gottem, resolve the promise w/user's selected & connected Acc.
@@ -299,4 +207,4 @@ function waitForAccount() {
 			}
 		});
 	});
-}
+};
