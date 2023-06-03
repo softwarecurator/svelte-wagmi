@@ -7,7 +7,8 @@ import {
 	disconnect,
 	getNetwork,
 	connect,
-	watchNetwork
+	watchNetwork,
+	type GetAccountResult
 } from '@wagmi/core';
 import {
 	arbitrum,
@@ -120,7 +121,6 @@ export const configureWagmi = async (options: IOptions = {}) => {
 
 export const init = async () => {
 	unsubscribers();
-	const account: any = getAccount();
 	unWatchAccount = watchAccount(async (account) => {
 		if (get(wagmiLoaded) && get(signerAddress) !== account.address && account.address) {
 			const chain: any = getNetwork();
@@ -142,7 +142,7 @@ export const init = async () => {
 			chainId.set(network.chain.id);
 		}
 	});
-
+	const account = await waitForConnection();
 	if (account.address) {
 		const chain: any = getNetwork();
 		chainId.set(chain.chain.id);
@@ -162,7 +162,7 @@ export const connection = async (chainId: number = 1) => {
 			connector: new InjectedConnector()
 		});
 
-		await init();
+		setStores();
 		return { success: true };
 	} catch (err) {
 		return { success: false };
@@ -173,7 +173,7 @@ export const WC = async () => {
 	try {
 		get(web3Modal).openModal();
 		await waitForAccount();
-		await init();
+		setStores();
 
 		return { succcess: true };
 	} catch (err) {
@@ -207,4 +207,32 @@ const waitForAccount = () => {
 			}
 		});
 	});
+};
+
+const waitForConnection = (): Promise<GetAccountResult> =>
+	new Promise((resolve, reject) => {
+		const attemptToGetAccount = () => {
+			const account = getAccount();
+			if (account.isDisconnected) reject('account is disconnected');
+			if (account.isConnecting) {
+				// If the account is still connecting, try again after a delay
+				setTimeout(attemptToGetAccount, 250); // 1000ms delay, adjust to fit your needs
+			} else {
+				// If the account is no longer connecting, resolve the promise
+				resolve(account);
+			}
+		};
+
+		attemptToGetAccount();
+	});
+
+const setStores = () => {
+	const account: any = getAccount();
+
+	if (account.address) {
+		const chain: any = getNetwork();
+		chainId.set(chain.chain.id);
+		connected.set(true);
+		signerAddress.set(account.address);
+	}
 };
