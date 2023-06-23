@@ -35,9 +35,9 @@
 		"dist"
 	],
 	"peerDependencies": {
+		"@wagmi/core": "^1.0.8",
 		"svelte": "^3.54.0",
-		"viem": "^0.3.38",
-		"@wagmi/core": "^1.0.8"
+		"viem": "^1.1.6"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^2.0.0",
@@ -56,7 +56,7 @@
 		"svelte-check": "^3.0.1",
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.4",
-		"viem": "^0.3.38",
+		"viem": "^1.1.6",
 		"vite": "^4.0.0"
 	},
 	"svelte": "./dist/index.js",
