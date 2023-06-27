@@ -45,6 +45,7 @@ interface IOptions {
 	walletconnect?: boolean;
 	walletconnectProjectID?: string;
 	alchemyKey?: string | null;
+	connectors?: any[];
 	autoConnect?: boolean;
 }
 
@@ -100,6 +101,8 @@ export const configureWagmi = async (options: IOptions = {}) => {
 				}
 			})
 		);
+
+	if (options.connectors) connectors.push(...options.connectors);
 
 	const wagmiClient = createConfig({
 		autoConnect: options.autoConnect ?? true,

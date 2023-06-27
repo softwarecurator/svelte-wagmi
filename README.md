@@ -131,18 +131,27 @@ The `configureWagmi` function is used to configure the `@wagmi/core` library and
 - `walletconnectProjectID` (optional): A string that contains the Project ID for the WalletConnect service. This is required if walletconnect is set to true.
 - `alchemyKey` (optional): A string that contains the API key for the Alchemy service. This is required if you want to use the Alchemy provider.
 - `autoConnect` (optional): A boolean that indicates whether to automatically connect to the Ethereum provider on page load.
-
-Example usage:
+- `connectors` (optional): Allow wagmi/core connectors other then injected connectors and walletconnect
+  Example usage:
 
 ```html
 <script>
 	import { configureWagmi } from 'svelte-wagmi';
+	import { CoinbaseWalletConnector } from '@wagmi/core/connectors/coinbaseWallet';
+
+	const coinbaseConnector = new CoinbaseWalletConnector({
+		options: {
+			appName: 'svelte-wagmi.io',
+			jsonRpcUrl: 'https://eth-mainnet.alchemyapi.io/v2/yourAlchemyId'
+		}
+	});
 
 	configureWagmi({
 		walletconnect: true,
 		walletconnectProjectID: '1234567890',
 		alchemyKey: 'abcdefghijklmnopqrstuvwxyz123456',
-		autoConnect: true
+		autoConnect: true,
+		connectors: [coinbaseConnector]
 	});
 </script>
 ```
