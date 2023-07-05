@@ -12,12 +12,13 @@
 		wagmiLoaded
 	} from '$lib/stores/wagmi';
 	import { onMount } from 'svelte';
+	import { PUBLIC_WALLETCONNECT_ID } from '$env/static/public';
 
 	onMount(
 		async () =>
 			await configureWagmi({
 				walletconnect: true,
-				walletconnectProjectID: '',
+				walletconnectProjectID: PUBLIC_WALLETCONNECT_ID,
 				alchemyKey: '',
 				autoConnect: true
 			})
@@ -46,7 +47,7 @@
 			<button
 				on:click={async () => {
 					$loading = true;
-					await WC();
+					await $web3Modal.openModal();
 					$loading = false;
 				}}
 			>

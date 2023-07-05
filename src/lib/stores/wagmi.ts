@@ -120,36 +120,40 @@ export const configureWagmi = async (options: IOptions = {}) => {
 };
 
 export const init = async () => {
-	unsubscribers();
-	unWatchAccount = watchAccount(async (account) => {
-		if (get(wagmiLoaded) && get(signerAddress) !== account.address && account.address) {
+	try {
+		unsubscribers();
+		unWatchAccount = watchAccount(async (account) => {
+			if (get(wagmiLoaded) && get(signerAddress) !== account.address && account.address) {
+				const chain: any = getNetwork();
+				chainId.set(chain.chain.id);
+				connected.set(true);
+				loading.set(false);
+				signerAddress.set(account.address);
+			} else if (get(signerAddress) !== account.address && get(connected)) {
+				loading.set(false);
+				await disconnectWagmi();
+			} else if (account.isDisconnected && get(connected)) {
+				loading.set(false);
+				await disconnectWagmi();
+			}
+		});
+
+		unWatchNetwork = watchNetwork((network) => {
+			if (network.chain) {
+				chainId.set(network.chain.id);
+			}
+		});
+		const account = await waitForConnection();
+		if (account.address) {
 			const chain: any = getNetwork();
 			chainId.set(chain.chain.id);
 			connected.set(true);
-			loading.set(false);
 			signerAddress.set(account.address);
-		} else if (get(signerAddress) !== account.address && get(connected)) {
-			loading.set(false);
-			await disconnectWagmi();
-		} else if (account.isDisconnected && get(connected)) {
-			loading.set(false);
-			await disconnectWagmi();
 		}
-	});
-
-	unWatchNetwork = watchNetwork((network) => {
-		if (network.chain) {
-			chainId.set(network.chain.id);
-		}
-	});
-	const account = await waitForConnection();
-	if (account.address) {
-		const chain: any = getNetwork();
-		chainId.set(chain.chain.id);
-		connected.set(true);
-		signerAddress.set(account.address);
+		loading.set(false);
+	} catch (err) {
+		loading.set(false);
 	}
-	loading.set(false);
 };
 
 export const connection = async (chainId: number = 1) => {
