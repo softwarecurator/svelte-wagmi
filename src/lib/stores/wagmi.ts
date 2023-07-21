@@ -8,36 +8,26 @@ import {
 	getNetwork,
 	connect,
 	watchNetwork,
-	type GetAccountResult
+	Connector,
+	type GetAccountResult,
+	type GetNetworkResult
 } from '@wagmi/core';
-import {
-	arbitrum,
-	arbitrumGoerli,
-	avalanche,
-	avalancheFuji,
-	baseGoerli,
-	bscTestnet,
-	canto,
-	goerli,
-	mainnet,
-	optimism,
-	optimismGoerli,
-	polygon,
-	polygonMumbai,
-	polygonZkEvm,
-	polygonZkEvmTestnet
-} from '@wagmi/core/chains';
+import { mainnet, polygon, optimism, arbitrum, type Chain } from '@wagmi/core/chains';
 import { publicProvider } from '@wagmi/core/providers/public';
 import { alchemyProvider } from '@wagmi/core/providers/alchemy';
 import { InjectedConnector } from '@wagmi/core/connectors/injected';
 import { EthereumClient, w3mProvider } from '@web3modal/ethereum';
 import { Web3Modal } from '@web3modal/html';
 import { WalletConnectConnector } from '@wagmi/core/connectors/walletConnect';
+import { infuraProvider } from '@wagmi/core/providers/infura';
+import { jsonRpcProvider } from '@wagmi/core/providers/jsonRpc';
+import { CoinbaseWalletConnector } from '@wagmi/core/connectors/coinbaseWallet';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
 export const chainId = writable<number | null | undefined>(null);
 export const signerAddress = writable<string | null>(null);
+export const configuredConnectors = writable<Connector[]>([]);
 export const loading = writable<boolean>(true);
 export const web3Modal = writable<Web3Modal>();
 
@@ -48,37 +38,84 @@ interface IOptions {
 	autoConnect?: boolean;
 }
 
-let unWatchAccount: () => void;
-let unWatchNetwork: () => void;
-
-const defaultChains = [
-	mainnet,
-	goerli,
-	arbitrum,
-	arbitrumGoerli,
-	avalanche,
-	avalancheFuji,
-	baseGoerli,
-	bscTestnet,
-	canto,
-	optimism,
-	optimismGoerli,
-	polygon,
-	polygonMumbai,
-	polygonZkEvm,
-	polygonZkEvmTestnet
-];
-
-const unsubscribers = () => {
-	if (unWatchAccount && unWatchNetwork) {
-		unWatchAccount();
-		unWatchNetwork();
-	}
-	connected.set(false);
-	chainId.set(null);
-	signerAddress.set(null);
+type DefaultConnectorsProps = {
+	chains?: Chain[];
+	app: {
+		name: string;
+		icon?: string;
+		description?: string;
+		url?: string;
+	};
+	walletConnectProjectId: string;
+	alchemyId: string;
 };
 
+type DefaultConfigProps = {
+	appName: string;
+	appIcon?: string;
+	appDescription?: string;
+	appUrl?: string;
+	autoConnect?: boolean;
+	alchemyId: string;
+	infuraId?: string;
+	chains?: Chain[];
+	connectors?: any;
+	publicClient?: any;
+	webSocketPublicClient?: any;
+	enableWebSocketPublicClient?: boolean;
+	stallTimeout?: number;
+	walletConnectProjectId: string;
+};
+
+const defaultChains = [mainnet, polygon, optimism, arbitrum];
+
+const getDefaultConnectors = ({
+	chains,
+	app,
+	walletConnectProjectId,
+	alchemyId
+}: DefaultConnectorsProps) => {
+	const hasAllAppData = app.name && app.icon && app.description && app.url;
+	let defaultConnectors: any[] = [];
+	defaultConnectors = [
+		...defaultConnectors,
+		new CoinbaseWalletConnector({
+			chains,
+			options: {
+				appName: app.name,
+				headlessMode: false,
+				jsonRpcUrl: `https://eth-mainnet.alchemyapi.io/v2/${alchemyId}`
+			}
+		}),
+		new WalletConnectConnector({
+			chains,
+			options: {
+				showQrModal: false,
+				projectId: walletConnectProjectId,
+				metadata: hasAllAppData
+					? {
+							name: app.name,
+							description: app.description!,
+							url: app.url!,
+							icons: [app.icon!]
+					  }
+					: undefined
+			}
+		}),
+		new InjectedConnector({
+			chains,
+			options: {
+				name: (detectedName) =>
+					`Injected (${typeof detectedName === 'string' ? detectedName : detectedName.join(', ')})`
+			}
+		})
+	];
+
+	configuredConnectors.set(defaultConnectors);
+	return defaultConnectors;
+};
+
+/** Deprecated **/
 export const configureWagmi = async (options: IOptions = {}) => {
 	const providers: any = [publicProvider()];
 	if (options.alchemyKey) providers.push(alchemyProvider({ apiKey: options.alchemyKey }));
@@ -119,34 +156,79 @@ export const configureWagmi = async (options: IOptions = {}) => {
 	await init();
 };
 
+export const defaultConfig = ({
+	autoConnect = true,
+	appName = 'Erc.Kit',
+	appIcon,
+	appDescription,
+	appUrl,
+	chains = defaultChains,
+	alchemyId,
+	infuraId,
+	connectors,
+	publicClient,
+	stallTimeout,
+	walletConnectProjectId
+}: DefaultConfigProps) => {
+	const providers = [];
+	if (alchemyId) {
+		providers.push(alchemyProvider({ apiKey: alchemyId }));
+	}
+	if (infuraId) {
+		providers.push(infuraProvider({ apiKey: infuraId }));
+	}
+	providers.push(
+		jsonRpcProvider({
+			rpc: (c) => {
+				return { http: c.rpcUrls.default.http[0] };
+			}
+		})
+	);
+
+	providers.push(publicProvider());
+	const {
+		publicClient: configuredPublicClient,
+		chains: configuredChains,
+		webSocketPublicClient: configuredWebSocketPublicClient
+	} = configureChains(chains, providers, { stallTimeout });
+
+	if (connectors) configuredConnectors.set(connectors);
+
+	const ercClient = createConfig({
+		autoConnect,
+		publicClient: publicClient ?? configuredPublicClient,
+		webSocketPublicClient: configuredWebSocketPublicClient,
+		connectors:
+			connectors ??
+			getDefaultConnectors({
+				chains: configuredChains,
+				app: {
+					name: appName,
+					icon: appIcon,
+					description: appDescription,
+					url: appUrl
+				},
+				walletConnectProjectId,
+				alchemyId
+			})
+	});
+
+	const ethereumClient = new EthereumClient(ercClient, configuredChains);
+	const modal = new Web3Modal({ projectId: walletConnectProjectId }, ethereumClient);
+
+	web3Modal.set(modal);
+	wagmiLoaded.set(true);
+
+	return { init };
+};
+
 export const init = async () => {
 	try {
-		unsubscribers();
-		unWatchAccount = watchAccount(async (account) => {
-			if (get(wagmiLoaded) && get(signerAddress) !== account.address && account.address) {
-				const chain: any = getNetwork();
-				chainId.set(chain.chain.id);
-				connected.set(true);
-				loading.set(false);
-				signerAddress.set(account.address);
-			} else if (get(signerAddress) !== account.address && get(connected)) {
-				loading.set(false);
-				await disconnectWagmi();
-			} else if (account.isDisconnected && get(connected)) {
-				loading.set(false);
-				await disconnectWagmi();
-			}
-		});
-
-		unWatchNetwork = watchNetwork((network) => {
-			if (network.chain) {
-				chainId.set(network.chain.id);
-			}
-		});
+		setupListeners();
 		const account = await waitForConnection();
 		if (account.address) {
-			const chain: any = getNetwork();
-			chainId.set(chain.chain.id);
+			const network: GetNetworkResult = getNetwork();
+			if (network.chain) chainId.set(network.chain.id);
 			connected.set(true);
 			signerAddress.set(account.address);
 		}
@@ -156,17 +238,38 @@ export const init = async () => {
 	}
 };
 
-export const connection = async (chainId: number = 1) => {
-	try {
-		const chain: any = defaultChains.filter(({ id }) => {
-			return id === chainId;
-		});
-		await connect({
-			chainId: chain.id,
-			connector: new InjectedConnector()
-		});
+const setupListeners = () => {
+	watchAccount(handleAccountChange);
+	watchNetwork(handleNetworkChange);
+};
 
-		setStores();
+const handleAccountChange = async (account: GetAccountResult) => {
+	if (get(wagmiLoaded) && account.address) {
+		const chain: any = getNetwork();
+		chainId.set(chain.chain.id);
+		connected.set(true);
+		loading.set(false);
+		signerAddress.set(account.address);
+	} else if (account.isDisconnected && get(connected)) {
+		loading.set(false);
+		await disconnectWagmi();
+	}
+};
+
+const handleNetworkChange = (network: GetNetworkResult) => {
+	if (network.chain) {
+		chainId.set(network.chain.id);
+	}
+};
+
+export const connection = async () => {
+	try {
+		const connector = getConnectorbyID('injected');
+		if (connector !== null) {
+			await connect({
+				connector
+			});
+		}
 		return { success: true };
 	} catch (err) {
 		return { success: false };
@@ -177,7 +280,6 @@ export const WC = async () => {
 	try {
 		get(web3Modal).openModal();
 		await waitForAccount();
-		setStores();
 
 		return { succcess: true };
 	} catch (err) {
@@ -219,10 +321,8 @@ const waitForConnection = (): Promise<GetAccountResult> =>
 			const account = getAccount();
 			if (account.isDisconnected) reject('account is disconnected');
 			if (account.isConnecting) {
-				// If the account is still connecting, try again after a delay
-				setTimeout(attemptToGetAccount, 250); // 1000ms delay, adjust to fit your needs
+				setTimeout(attemptToGetAccount, 250);
 			} else {
-				// If the account is no longer connecting, resolve the promise
 				resolve(account);
 			}
 		};
@@ -230,13 +330,11 @@ const waitForConnection = (): Promise<GetAccountResult> =>
 		attemptToGetAccount();
 	});
 
-const setStores = () => {
-	const account: any = getAccount();
-
-	if (account.address) {
-		const chain: any = getNetwork();
-		chainId.set(chain.chain.id);
-		connected.set(true);
-		signerAddress.set(account.address);
+export function getConnectorbyID(id: string): Connector | null {
+	for (const obj of get(configuredConnectors)) {
+		if (obj.id === id) {
+			return obj;
+		}
 	}
-};
+	return null;
+}

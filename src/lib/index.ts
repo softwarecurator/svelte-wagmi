@@ -10,11 +10,17 @@ import {
 	wagmiLoaded,
 	init,
 	WC,
-	disconnectWagmi
+	disconnectWagmi,
+	defaultConfig,
+	configuredConnectors,
+	getConnectorbyID,
 } from './stores/wagmi';
 
 export {
 	configureWagmi,
+	defaultConfig,
+	configuredConnectors,
+	getConnectorbyID,
 	wagmiLoaded,
 	connected,
 	chainId,

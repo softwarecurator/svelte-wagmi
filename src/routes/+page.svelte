@@ -9,20 +9,21 @@
 		chainId,
 		web3Modal,
 		WC,
+		defaultConfig,
 		wagmiLoaded
 	} from '$lib/stores/wagmi';
 	import { onMount } from 'svelte';
-	import { PUBLIC_WALLETCONNECT_ID } from '$env/static/public';
+	import { PUBLIC_WALLETCONNECT_ID, PUBLIC_ALCHEMY_ID } from '$env/static/public';
 
-	onMount(
-		async () =>
-			await configureWagmi({
-				walletconnect: true,
-				walletconnectProjectID: PUBLIC_WALLETCONNECT_ID,
-				alchemyKey: '',
-				autoConnect: true
-			})
-	);
+	onMount(async () => {
+		const erckit = defaultConfig({
+			appName: 'erc.kit',
+			walletConnectProjectId: PUBLIC_WALLETCONNECT_ID,
+			alchemyId: PUBLIC_ALCHEMY_ID
+		});
+
+		await erckit.init();
+	});
 </script>
 
 <div class="container">
