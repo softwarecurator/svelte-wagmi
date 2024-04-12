@@ -7,7 +7,7 @@ Svelte Wagmi is a package that provides a collection of Svelte stores and functi
 To install the package and its peer dependencies, run the following command:
 
 ```bash
-npm install svelte-wagmi viem @wagmi/core
+npm install svelte-wagmi viem @wagmi/core @wagmi/connectors
 ```
 
 ## Usages
@@ -113,7 +113,7 @@ Example usage:
 </script>
 
 {#if $web3Modal}
-<button on:click="{()" ="">$web3Modal.openModal()}> Connect to Ethereum</button>
+<button on:click="{()" ="">$web3Modal.open()}> Connect to Ethereum</button>
 {:else}
 
 <p>Web3Modal not yet available</p>
@@ -126,15 +126,9 @@ The `defaultConfig` function is used to configure the `@wagmi/core` library and 
 
 - `autoConnect` (boolean, default: `true`): Specifies whether the Ethereum client should automatically connect to a provider upon initialization. If set to `true`, the client will attempt to connect automatically.
 - `appName` (string, default: `'Erc.Kit'`): Specifies the name of the application using the Ethereum client.
-- `appIcon` (string): Specifies the URL or path to an icon representing the application.
-- `appDescription` (string): Specifies the description of the application.
-- `appUrl` (string): Specifies the URL of the application.
 - `chains` (array, default: `defaultChains`): An array of chain configurations to connect with. If not provided, the function will use default chain configurations.
-- `alchemyId` (string): The API key for the Alchemy provider, used for connecting to the Alchemy service.
-- `infuraId` (string): The API key for the Infura provider, used for connecting to the Infura service.
+- `alchemyId` (optional) (string): The API key for the Alchemy provider, used for connecting to the Alchemy service.
 - `connectors` (object): An object containing customized connector configurations for the Ethereum client.
-- `publicClient` (object): Specifies a pre-configured public client object.
-- `stallTimeout` (number): Specifies the stall timeout value for the Ethereum client.
 - `walletConnectProjectId` (string): The project ID used for the WalletConnect integration.
 
 ### Return Value:
@@ -150,77 +144,33 @@ Example usage:
 		import { defaultConfig } from 'svelte-wagmi';
 		import { onMount } from 'svelte';
 		import { PUBLIC_WALLETCONNECT_ID, PUBLIC_ALCHEMY_ID } from '$env/static/public';
+		import { injected } from '@wagmi/connectors';
 
 	onMount(async () => {
 			const erckit = defaultConfig({
 				appName: 'erc.kit',
 				walletConnectProjectId: PUBLIC_WALLETCONNECT_ID,
-				alchemyId: PUBLIC_ALCHEMY_ID
+				alchemyId: PUBLIC_ALCHEMY_ID,
+				connectors: [injected()]
 			});
+		});
 
 			await erckit.init();
 </script>
 ```
 
-### configureWagmi (deprecated)
-
-The `configureWagmi` function is used to configure the `@wagmi/core` library and initialize the Svelte stores. It takes an optional options object that can be used to configure the behavior of the function.
-
-- `walletconnect` (optional): A boolean that indicates whether to enable WalletConnect support. If this is set to true, the
-  walletconnectProjectID option must also be provided.
-- `walletconnectProjectID` (optional): A string that contains the Project ID for the WalletConnect service. This is required if walletconnect is set to true.
-- `alchemyKey` (optional): A string that contains the API key for the Alchemy service. This is required if you want to use the Alchemy provider.
-- `autoConnect` (optional): A boolean that indicates whether to automatically connect to the Ethereum provider on page load.
-
-Example usage:
-
-```html
-<script>
-	import { configureWagmi } from 'svelte-wagmi';
-
-	configureWagmi({
-		walletconnect: true,
-		walletconnectProjectID: '1234567890',
-		alchemyKey: 'abcdefghijklmnopqrstuvwxyz123456',
-		autoConnect: true
-	});
-</script>
-```
 ### configuredConnectors
 
-The `configuredConnectors` are store value array 
+The `configuredConnectors` are store value array
 
-
-
-  Example usage:
+Example usage:
 
 ```html
 <script>
 	import { configuredConnectors } from 'svelte-wagmi';
 
 	for (const connector of $configuredConnectors) {
-		console.log(connector)
-	}
-</script>
-
-<button on:click="{connectToEthereum}">Connect to Ethereum</button>
-```
-
-### connection
-
-The `connection` function is used to connect to an Ethereum provider using the InjectedConnector from @wagmi/core. It takes two parameters:
-
-- `chainId` (optional): A number that specifies the chain ID to connect to. The default is 1 (mainnet).
-- `statement` (optional): A string that specifies the statement to be signed by the user when logging in.
-
-  Example usage:
-
-```html
-<script>
-	import { connection } from 'svelte-wagmi';
-
-	async function connectToEthereum() {
-		await connection();
+		console.log(connector);
 	}
 </script>
 

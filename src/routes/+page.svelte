@@ -1,25 +1,31 @@
 <script>
 	import {
-		configureWagmi,
 		connected,
 		disconnectWagmi,
 		signerAddress,
-		connection,
+		wagmiConfig,
+		configuredConnectors,
 		loading,
 		chainId,
 		web3Modal,
-		WC,
 		defaultConfig,
 		wagmiLoaded
 	} from '$lib/stores/wagmi';
 	import { onMount } from 'svelte';
-	import { PUBLIC_WALLETCONNECT_ID, PUBLIC_ALCHEMY_ID } from '$env/static/public';
+	import { PUBLIC_WALLETCONNECT_ID } from '$env/static/public';
+	import { walletConnect, injected } from '@wagmi/connectors';
+	import { connect } from '@wagmi/core';
 
 	onMount(async () => {
 		const erckit = defaultConfig({
 			appName: 'erc.kit',
 			walletConnectProjectId: PUBLIC_WALLETCONNECT_ID,
-			alchemyId: PUBLIC_ALCHEMY_ID
+			connectors: [
+				injected(),
+				walletConnect({
+					projectId: PUBLIC_WALLETCONNECT_ID
+				})
+			]
 		});
 
 		await erckit.init();
@@ -48,7 +54,7 @@
 			<button
 				on:click={async () => {
 					$loading = true;
-					await $web3Modal.openModal();
+					await $web3Modal.open();
 					$loading = false;
 				}}
 			>
@@ -63,7 +69,9 @@
 			<button
 				on:click={async () => {
 					$loading = true;
-					await connection();
+					await connect($wagmiConfig, {
+						connector: $configuredConnectors[0]
+					});
 					$loading = false;
 				}}
 			>
