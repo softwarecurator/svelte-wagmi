@@ -12,7 +12,7 @@ import {
 	type Config
 } from '@wagmi/core';
 import { mainnet, polygon, optimism, arbitrum, type Chain } from '@wagmi/core/chains';
-import { createWeb3Modal, type Web3Modal } from '@web3modal/wagmi';
+import { createWeb3Modal, emailConnector, type Web3Modal } from '@web3modal/wagmi';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
@@ -45,6 +45,16 @@ export const defaultConfig = ({
 }: DefaultConfigProps) => {
 	if (connectors) configuredConnectors.set(connectors);
 
+	//add email connector
+	configuredConnectors.update((connectors) => [
+		...connectors,
+		emailConnector({
+			options: {
+				projectId: walletConnectProjectId
+			}
+		})
+	]);
+
 	const chainsToUse = chains ? chains.map((chain) => chain) : [];
 	const transports = chains
 		? chains.reduce(
@@ -59,7 +69,7 @@ export const defaultConfig = ({
 	const config = createConfig({
 		chains: chainsToUse as [Chain, ...Chain[]],
 		transports,
-		connectors
+		connectors: get(configuredConnectors)
 	});
 
 	wagmiConfig.set(config);
