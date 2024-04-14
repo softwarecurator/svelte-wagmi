@@ -1,11 +1,9 @@
 // Reexport your entry components here
 import {
-	configureWagmi,
 	connected,
 	chainId,
 	signerAddress,
 	loading,
-	connection,
 	web3Modal,
 	wagmiLoaded,
 	init,
@@ -13,14 +11,12 @@ import {
 	disconnectWagmi,
 	defaultConfig,
 	configuredConnectors,
-	getConnectorbyID,
 } from './stores/wagmi';
 
+
 export {
-	configureWagmi,
 	defaultConfig,
 	configuredConnectors,
-	getConnectorbyID,
 	wagmiLoaded,
 	connected,
 	chainId,
@@ -29,6 +25,5 @@ export {
 	signerAddress,
 	loading,
 	WC,
-	connection,
 	disconnectWagmi
 };
