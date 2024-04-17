@@ -4,7 +4,6 @@ import {
 	http,
 	getAccount,
 	disconnect,
-	connect,
 	watchAccount,
 	reconnect,
 	type CreateConnectorFn,
@@ -118,7 +117,7 @@ const handleAccountChange = (data: GetAccountReturnType) => {
 	return (async () => {
 		if (get(wagmiLoaded) && data.address) {
 			const chain = get(wagmiConfig).chains.find((chain) => chain.id === data.chainId);
-			console.log('chain', chain);
+
 			if (chain) chainId.set(chain.id);
 			connected.set(true);
 			loading.set(false);
