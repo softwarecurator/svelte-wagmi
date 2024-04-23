@@ -18,15 +18,15 @@ The `connected` store indicates whether the application is currently connected t
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { connected } from 'svelte-wagmi';
 </script>
 
 {#if $connected}
-<p>Connected to Ethereum</p>
+	<p>Connected to Ethereum</p>
 {:else}
-<p>Not connected to Ethereum</p>
+	<p>Not connected to Ethereum</p>
 {/if}
 ```
 
@@ -36,15 +36,15 @@ The `wagmiLoaded` store indicates whether the @wagmi/core library has been loade
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { wagmiLoaded } from 'svelte-wagmi';
 </script>
 
 {#if $wagmiLoaded}
-<p>@wagmi/core is loaded and initialized</p>
+	<p>@wagmi/core is loaded and initialized</p>
 {:else}
-<p>@wagmi/core is not yet loaded</p>
+	<p>@wagmi/core is not yet loaded</p>
 {/if}
 ```
 
@@ -54,15 +54,15 @@ The `chainId` store contains the current chain ID of the connected Ethereum prov
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { chainId } from 'svelte-wagmi';
 </script>
 
 {#if $chainId}
-<p>Current chain ID: {$chainId}</p>
+	<p>Current chain ID: {$chainId}</p>
 {:else}
-<p>Chain ID not yet available</p>
+	<p>Chain ID not yet available</p>
 {/if}
 ```
 
@@ -72,15 +72,15 @@ The `signerAddress` store contains the current signer address of the connected E
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { signerAddress } from 'svelte-wagmi';
 </script>
 
 {#if $signerAddress}
-<p>Current signer address: {$signerAddress}</p>
+	<p>Current signer address: {$signerAddress}</p>
 {:else}
-<p>Signer address not yet available</p>
+	<p>Signer address not yet available</p>
 {/if}
 ```
 
@@ -90,15 +90,15 @@ The `loading` store indicates whether the application is currently loading data 
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { loading } from 'svelte-wagmi';
 </script>
 
 {#if $loading}
-<p>Loading data...</p>
+	<p>Loading data...</p>
 {:else}
-<p>Data loaded</p>
+	<p>Data loaded</p>
 {/if}
 ```
 
@@ -107,16 +107,15 @@ Example usage:
 The `web3Modal` store contains an instance of the `Web3Modal` class from the `@web3modal/html` package. It is used to display a modal for connecting to an Ethereum provider using WalletConnect or other methods.
 Example usage:
 
-```html
+```svelte
 <script>
 	import { web3Modal } from 'svelte-wagmi';
 </script>
 
 {#if $web3Modal}
-<button on:click="{()" ="">$web3Modal.open()}> Connect to Ethereum</button>
+	<button on:click={() => $web3Modal.open()}> Connect to Ethereum</button>
 {:else}
-
-<p>Web3Modal not yet available</p>
+	<p>Web3Modal not yet available</p>
 {/if}
 ```
 
@@ -139,23 +138,23 @@ The `defaultConfig` function returns an object with the following properties:
 
 Example usage:
 
-```html
+```svelte
 <script>
-		import { defaultConfig } from 'svelte-wagmi';
-		import { onMount } from 'svelte';
-		import { PUBLIC_WALLETCONNECT_ID, PUBLIC_ALCHEMY_ID } from '$env/static/public';
-		import { injected } from '@wagmi/connectors';
+	import { defaultConfig } from 'svelte-wagmi';
+	import { onMount } from 'svelte';
+	import { PUBLIC_WALLETCONNECT_ID, PUBLIC_ALCHEMY_ID } from '$env/static/public';
+	import { injected } from '@wagmi/connectors';
 
 	onMount(async () => {
-			const erckit = defaultConfig({
-				appName: 'erc.kit',
-				walletConnectProjectId: PUBLIC_WALLETCONNECT_ID,
-				alchemyId: PUBLIC_ALCHEMY_ID,
-				connectors: [injected()]
-			});
+		const erckit = defaultConfig({
+			appName: 'erc.kit',
+			walletConnectProjectId: PUBLIC_WALLETCONNECT_ID,
+			alchemyId: PUBLIC_ALCHEMY_ID,
+			connectors: [injected()]
 		});
+	});
 
-			await erckit.init();
+	await erckit.init();
 </script>
 ```
 
@@ -165,7 +164,7 @@ The `configuredConnectors` are store value array
 
 Example usage:
 
-```html
+```svelte
 <script>
 	import { configuredConnectors } from 'svelte-wagmi';
 
@@ -174,7 +173,7 @@ Example usage:
 	}
 </script>
 
-<button on:click="{connectToEthereum}">Connect to Ethereum</button>
+<button on:click={connectToEthereum}>Connect to Ethereum</button>
 ```
 
 ### WC
@@ -185,7 +184,7 @@ The `WC` function is used to connect to an Ethereum provider using WalletConnect
 
   Example usage:
 
-```html
+```svelte
 <script>
 	import { WC } from 'svelte-wagmi';
 
@@ -193,14 +192,15 @@ The `WC` function is used to connect to an Ethereum provider using WalletConnect
 		await WC('Sign in to the app with Ethereum');
 	}
 </script>
-<button on:click="{connectToEthereum}">Connect to Ethereum</button>
+
+<button on:click={connectToEthereum}>Connect to Ethereum</button>
 ```
 
 ### disconnectWagmi
 
 The `disconnectWagmi` function is used to disconnect from the Ethereum provider and clear the Svelte stores. Example usage:
 
-```html
+```svelte
 <script>
 	import { disconnectWagmi } from 'svelte-wagmi';
 
@@ -209,7 +209,7 @@ The `disconnectWagmi` function is used to disconnect from the Ethereum provider 
 	}
 </script>
 
-<button on:click="{disconnectFromEthereum}">Disconnect from Ethereum</button>
+<button on:click={disconnectFromEthereum}>Disconnect from Ethereum</button>
 ```
 
 ### Svelte stores
@@ -223,7 +223,7 @@ The `svelte-wagmi` library also provides several Svelte stores that can be used 
 - `loading`: A boolean that indicates whether the library is currently loading.
   Example usage:
 
-```html
+```svelte
 <script>
 	import { connected, chainId, signerAddress } from 'svelte-wagmi';
 
@@ -239,17 +239,18 @@ The `svelte-wagmi` library also provides several Svelte stores that can be used 
 
 ### Using @wagmi/core
 
-You can use any wagmi/core functions
+You can use any wagmi/core functions by passing $wagmiConfig from svelte-wagmi
 
-```html
+```svelte
 <script>
-		import { getAccount, switchNetwork } from '@wagmi/core';
+	import { getAccount, switchNetwork } from '@wagmi/core';
+	import { wagmiConfig } from 'svelte-wagmi';
 
-		const account = getAccount();
+	const account = getAccount($wagmiConfig);
 
-		const network = await switchNetwork({
-	  chainId: 69,
-	})
+	const network = await switchNetwork($wagmiConfig, {
+		chainId: 69
+	});
 </script>
 ```
 
