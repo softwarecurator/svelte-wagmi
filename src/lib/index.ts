@@ -6,13 +6,13 @@ import {
 	loading,
 	web3Modal,
 	wagmiLoaded,
+	wagmiConfig,
 	init,
 	WC,
 	disconnectWagmi,
 	defaultConfig,
-	configuredConnectors,
+	configuredConnectors
 } from './stores/wagmi';
-
 
 export {
 	defaultConfig,
@@ -21,6 +21,7 @@ export {
 	connected,
 	chainId,
 	init,
+	wagmiConfig,
 	web3Modal,
 	signerAddress,
 	loading,
