@@ -11,7 +11,7 @@ import {
 	type Config
 } from '@wagmi/core';
 import { mainnet, polygon, optimism, arbitrum, type Chain } from '@wagmi/core/chains';
-import { createWeb3Modal, emailConnector, type Web3Modal } from '@web3modal/wagmi';
+import { createWeb3Modal, authConnector, type Web3Modal } from '@web3modal/wagmi';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
@@ -47,7 +47,7 @@ export const defaultConfig = ({
 	//add email connector
 	configuredConnectors.update((connectors) => [
 		...connectors,
-		emailConnector({
+		authConnector({
 			options: {
 				projectId: walletConnectProjectId
 			}
