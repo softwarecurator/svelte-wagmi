@@ -258,7 +258,18 @@ You can use any wagmi/core functions by passing $wagmiConfig from svelte-wagmi
 
 changing network using `@wagmi/core` will also chage the `svelte-wagmi`: chainId store
 
-`$signerAddress` and `getAccount()` are the same ETH address
+`$signerAddress` and `getAccount()` are the same ETH address.
+
+If you experience an error from @Web3Modal/connectors that "process is not defined", a workaround is to defined process.env explicitly in your vite.config.ts
+
+```ts
+export default defineConfig({
+	// ... rest of your config
+	define: {
+		'process.env': {}
+	}
+});
+```
 
 ## Roadmap
 
