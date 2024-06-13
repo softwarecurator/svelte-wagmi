@@ -1,17 +1,17 @@
 import { writable, get } from 'svelte/store';
 import {
 	createConfig,
-	http,
 	getAccount,
 	disconnect,
 	watchAccount,
 	reconnect,
 	type CreateConnectorFn,
 	type GetAccountReturnType,
-	type Config
+	type Config,
+	http
 } from '@wagmi/core';
 import { mainnet, polygon, optimism, arbitrum, type Chain } from '@wagmi/core/chains';
-import { createWeb3Modal, emailConnector, type Web3Modal } from '@web3modal/wagmi';
+import { createWeb3Modal, type Web3Modal } from '@web3modal/wagmi';
 
 export const connected = writable<boolean>(false);
 export const wagmiLoaded = writable<boolean>(false);
@@ -45,21 +45,16 @@ export const defaultConfig = ({
 	if (connectors) configuredConnectors.set(connectors);
 
 	//add email connector
-	configuredConnectors.update((connectors) => [
-		...connectors,
-		emailConnector({
-			options: {
-				projectId: walletConnectProjectId
-			}
-		})
-	]);
+	configuredConnectors.update((connectors) => [...connectors]);
+
+	const url = alchemyId ? http(`https://eth-mainnet.g.alchemy.com/v2/${alchemyId}`) : http();
 
 	const chainsToUse = chains ? chains.map((chain) => chain) : [];
 	const transports = chains
 		? chains.reduce(
 				(acc, chain) => ({
 					...acc,
-					[chain.id]: http()
+					[chain.id]: url
 				}),
 				{}
 			)
